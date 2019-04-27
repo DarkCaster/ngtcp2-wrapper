@@ -1,0 +1,9 @@
+[submodule "External/ngtcp2"]
+	path = External/ngtcp2
+	url = https://github.com/ngtcp2/ngtcp2.git
+[submodule "External/nghttp3"]
+	path = External/nghttp3
+	url = https://github.com/ngtcp2/nghttp3.git
+[submodule "External/openssl"]
+	path = External/openssl
+	url = https://github.com/tatsuhiro-t/openssl.git
