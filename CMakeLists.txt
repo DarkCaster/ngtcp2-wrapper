@@ -80,9 +80,9 @@ set(CMAKE_USE_RELATIVE_PATHS TRUE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
 set(CMAKE_INSTALL_RPATH "./lib${ARCHSUFFIX}")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/build/lib${ARCHSUFFIX}")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/build/lib${ARCHSUFFIX}")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/build")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Build/lib${ARCHSUFFIX}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Build/lib${ARCHSUFFIX}")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Build")
 
 file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 file(MAKE_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
@@ -103,7 +103,7 @@ if(CMAKE_COMPILER_IS_GNUCC)
   set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG")
   set(CMAKE_C_FLAGS_DEBUG "-O0 -DDEBUG -ggdb")
 
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14 -fpermissive -fno-exceptions -Wall -Wextra -Wshadow -Wstrict-overflow=5 -Wwrite-strings -Winit-self -Wmissing-include-dirs -Wcast-qual -Wcast-align -Wconversion -Wlogical-op -Wpacked -Wredundant-decls -Winline -Wdisabled-optimization -Woverlength-strings -Wfloat-equal -Wswitch-default -Wno-missing-field-initializers ${OPTFLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -fpermissive -fno-exceptions -Wall -Wextra -Wshadow -Wstrict-overflow=5 -Wwrite-strings -Winit-self -Wmissing-include-dirs -Wcast-qual -Wcast-align -Wconversion -Wlogical-op -Wpacked -Wredundant-decls -Winline -Wdisabled-optimization -Woverlength-strings -Wfloat-equal -Wswitch-default -Wno-missing-field-initializers ${OPTFLAGS}")
   #set build-type dependent additional flags
   set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
   set(CMAKE_CXX_FLAGS_DEBUG "-O0 -DDEBUG -ggdb")
@@ -135,3 +135,20 @@ configure_file(config.h.in config.h)
 if(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES)
   include_directories("${CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES}")
 endif(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES)
+
+include_directories(
+  "${CMAKE_SOURCE_DIR}/lib"
+  "${OPENSSL_INCLUDE_DIR}"
+  "${LIBEV_INCLUDE}"
+  "${LIBNGHTTP3_INCLUDE}"
+  "${LIBNGTCP2_INCLUDE}"
+)
+
+set(lib_SOURCES
+  "Lib/dummy.c"
+  "Lib/dummy.cpp"
+)
+
+# Public shared library
+add_library(ngtcp2_wrapper SHARED ${lib_SOURCES})
+target_link_libraries(ngtcp2_wrapper ${OPENSSL_LIBRARIES} ${LIBEV_LIB} ${LIBNGHTTP3_LIB} ${LIBNGTCP2_LIB})
