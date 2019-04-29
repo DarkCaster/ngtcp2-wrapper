@@ -151,4 +151,11 @@ set(lib_SOURCES
 
 # Public shared library
 add_library(ngtcp2_wrapper SHARED ${lib_SOURCES})
-target_link_libraries(ngtcp2_wrapper ${OPENSSL_LIBRARIES} ${LIBEV_LIB} ${LIBNGHTTP3_LIB} ${LIBNGTCP2_LIB})
+target_link_libraries(ngtcp2_wrapper PRIVATE ${OPENSSL_LIBRARIES} ${LIBEV_LIB} ${LIBNGHTTP3_LIB} ${LIBNGTCP2_LIB})
+
+set(test_SOURCES
+  "TestUtil/main.c"
+)
+
+add_executable(testutil ${test_SOURCES})
+target_link_libraries(testutil ngtcp2_wrapper)
