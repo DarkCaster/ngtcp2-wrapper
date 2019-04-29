@@ -1,0 +1,17 @@
+diff -uprN nghttp3/lib/CMakeLists.txt nghttp3.new/lib/CMakeLists.txt
+--- nghttp3/lib/CMakeLists.txt	2019-04-29 15:30:17.750882128 +0300
++++ nghttp3.new/lib/CMakeLists.txt	2019-04-29 15:39:06.379832687 +0300
+@@ -58,8 +58,12 @@ set(nghttp3_SOURCES
+   nghttp3_http.c
+ )
+ 
++if(NOT LIBS_BUILD_TYPE)
++ set(LIBS_BUILD_TYPE "SHARED")
++endif()
++
+ # Public shared library
+-add_library(nghttp3 SHARED ${nghttp3_SOURCES})
++add_library(nghttp3 ${LIBS_BUILD_TYPE} ${nghttp3_SOURCES})
+ set_target_properties(nghttp3 PROPERTIES
+   COMPILE_FLAGS "${WARNCFLAGS}"
+   VERSION ${LT_VERSION} SOVERSION ${LT_SOVERSION}

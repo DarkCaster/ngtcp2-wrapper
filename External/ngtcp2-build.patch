@@ -1,0 +1,33 @@
+diff -uprN ngtcp2/CMakeLists.txt ngtcp2.new/CMakeLists.txt
+--- ngtcp2/CMakeLists.txt	2019-04-29 15:28:26.707523476 +0300
++++ ngtcp2.new/CMakeLists.txt	2019-04-29 22:36:03.212429754 +0300
+@@ -238,9 +238,9 @@ set(PKGDATADIR "${CMAKE_INSTALL_FULL_DAT
+ install(FILES README.rst DESTINATION "${CMAKE_INSTALL_DOCDIR}")
+ 
+ add_subdirectory(lib)
+-add_subdirectory(tests)
+-add_subdirectory(third-party)
+-add_subdirectory(examples)
++#add_subdirectory(tests)
++#add_subdirectory(third-party)
++#add_subdirectory(examples)
+ 
+ 
+ string(TOUPPER "${CMAKE_BUILD_TYPE}" _build_type)
+diff -uprN ngtcp2/lib/CMakeLists.txt ngtcp2.new/lib/CMakeLists.txt
+--- ngtcp2/lib/CMakeLists.txt	2019-04-29 15:28:26.711523453 +0300
++++ ngtcp2.new/lib/CMakeLists.txt	2019-04-29 22:47:07.472666160 +0300
+@@ -62,8 +62,12 @@ set(ngtcp2_SOURCES
+   ngtcp2_pv.c
+ )
+ 
++if(NOT LIBS_BUILD_TYPE)
++ set(LIBS_BUILD_TYPE "SHARED")
++endif()
++
+ # Public shared library
+-add_library(ngtcp2 SHARED ${ngtcp2_SOURCES})
++add_library(ngtcp2 ${LIBS_BUILD_TYPE} ${ngtcp2_SOURCES})
+ set_target_properties(ngtcp2 PROPERTIES
+   COMPILE_FLAGS "${WARNCFLAGS}"
+   VERSION ${LT_VERSION} SOVERSION ${LT_SOVERSION}
