@@ -101,7 +101,7 @@ build_stuff() {
   clean_dir "$script_dir/External/dist/nghttp3_linux_$arch"
   pushd "$script_dir/External/nghttp3"
   patch -p1 -i ../nghttp3-build.patch
-  CFLAGS="$CFLAGS -Os" CXXFLAGS="$CXXFLAGS -Os"\
+  CFLAGS="$CFLAGS -Os -fPIC" CXXFLAGS="$CXXFLAGS -Os -fPIC"\
   cmake -DCMAKE_BUILD_TYPE="Release"\
   -DENABLE_LIB_ONLY="TRUE"\
   $cmake_opts\
@@ -116,7 +116,7 @@ build_stuff() {
   clean_dir "$script_dir/External/dist/ngtcp2_linux_$arch"
   pushd "$script_dir/External/ngtcp2"
   patch -p1 -i ../ngtcp2-build.patch
-  CFLAGS="$CFLAGS -Os" CXXFLAGS="$CXXFLAGS -Os"\
+  CFLAGS="$CFLAGS -Os -fPIC" CXXFLAGS="$CXXFLAGS -Os -fPIC"\
   cmake -DCMAKE_BUILD_TYPE="Release"\
   $cmake_opts\
   -DCMAKE_INSTALL_PREFIX:PATH="$script_dir/External/dist/ngtcp2_linux_$arch"\
