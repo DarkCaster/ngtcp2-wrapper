@@ -98,12 +98,12 @@ if(CMAKE_COMPILER_IS_GNUCC)
 
   #general compiler flags for gcc compiler
   ##You can enable additional warnings for paranoics: -Wunsuffixed-float-constants -Wpadded
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11 -Wall -Wextra -Wshadow -Wstrict-overflow=5 -Wwrite-strings -Winit-self -Wmissing-include-dirs -Wbad-function-cast -Wc++-compat -Wcast-qual -Wcast-align -Wconversion -Wlogical-op -Wstrict-prototypes -Wold-style-definition -Wmissing-prototypes -Wmissing-declarations -Wpacked -Wredundant-decls -Wnested-externs -Winline -Wdisabled-optimization -Woverlength-strings -Wfloat-equal -Wswitch-default ${OPTFLAGS}")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wshadow -Wstrict-overflow=5 -Wwrite-strings -Winit-self -Wmissing-include-dirs -Wbad-function-cast -Wc++-compat -Wcast-qual -Wcast-align -Wconversion -Wlogical-op -Wstrict-prototypes -Wold-style-definition -Wmissing-prototypes -Wmissing-declarations -Wpacked -Wredundant-decls -Wnested-externs -Winline -Wdisabled-optimization -Woverlength-strings -Wfloat-equal -Wswitch-default ${OPTFLAGS}")
   #set build-type dependent additional flags
   set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG")
   set(CMAKE_C_FLAGS_DEBUG "-O0 -DDEBUG -ggdb")
 
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11 -fpermissive -fno-exceptions -Wall -Wextra -Wshadow -Wstrict-overflow=5 -Wwrite-strings -Winit-self -Wmissing-include-dirs -Wcast-qual -Wcast-align -Wconversion -Wlogical-op -Wpacked -Wredundant-decls -Winline -Wdisabled-optimization -Woverlength-strings -Wfloat-equal -Wswitch-default -Wno-missing-field-initializers ${OPTFLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive -fno-exceptions -Wall -Wextra -Wshadow -Wstrict-overflow=5 -Wwrite-strings -Winit-self -Wmissing-include-dirs -Wcast-qual -Wcast-align -Wconversion -Wlogical-op -Wpacked -Wredundant-decls -Winline -Wdisabled-optimization -Woverlength-strings -Wfloat-equal -Wswitch-default -Wno-missing-field-initializers ${OPTFLAGS}")
   #set build-type dependent additional flags
   set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
   set(CMAKE_CXX_FLAGS_DEBUG "-O0 -DDEBUG -ggdb")
