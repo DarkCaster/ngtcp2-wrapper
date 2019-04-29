@@ -129,8 +129,6 @@ build_stuff() {
 
 build_stuff "$arch"
 
-exit 0
-
 [[ $arch != "x86_64" ]] && exit 0
 
 export CFLAGS="-m32"
