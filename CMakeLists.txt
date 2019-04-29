@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.12)
 project(ngtcp2_wrapper C CXX)
 
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type" FORCE)
+endif()
+
 if(NOT TARGET_OS)
   set(TARGET_OS "linux")
 endif()
@@ -67,3 +71,67 @@ if(NOT LIBNGTCP2_INCLUDE)
 else()
   message(STATUS "Found libngtcp2 include dir: ${LIBNGTCP2_INCLUDE}")
 endif()
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_C_STANDARD 11)
+
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_USE_RELATIVE_PATHS TRUE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+
+set(CMAKE_INSTALL_RPATH "./lib${ARCHSUFFIX}")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/build/lib${ARCHSUFFIX}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/build/lib${ARCHSUFFIX}")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/build")
+
+file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+file(MAKE_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+
+include_directories("${CMAKE_BINARY_DIR}")
+
+#set flags for gcc
+if(CMAKE_COMPILER_IS_GNUCC)
+  set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+
+  #platform dependent gcc flags
+  set(OPTFLAGS "-pedantic")
+
+  #general compiler flags for gcc compiler
+  ##You can enable additional warnings for paranoics: -Wunsuffixed-float-constants -Wpadded
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11 -Wall -Wextra -Wshadow -Wstrict-overflow=5 -Wwrite-strings -Winit-self -Wmissing-include-dirs -Wbad-function-cast -Wc++-compat -Wcast-qual -Wcast-align -Wconversion -Wlogical-op -Wstrict-prototypes -Wold-style-definition -Wmissing-prototypes -Wmissing-declarations -Wpacked -Wredundant-decls -Wnested-externs -Winline -Wdisabled-optimization -Woverlength-strings -Wfloat-equal -Wswitch-default ${OPTFLAGS}")
+  #set build-type dependent additional flags
+  set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG")
+  set(CMAKE_C_FLAGS_DEBUG "-O0 -DDEBUG -ggdb")
+
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14 -fpermissive -fno-exceptions -Wall -Wextra -Wshadow -Wstrict-overflow=5 -Wwrite-strings -Winit-self -Wmissing-include-dirs -Wcast-qual -Wcast-align -Wconversion -Wlogical-op -Wpacked -Wredundant-decls -Winline -Wdisabled-optimization -Woverlength-strings -Wfloat-equal -Wswitch-default -Wno-missing-field-initializers ${OPTFLAGS}")
+  #set build-type dependent additional flags
+  set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
+  set(CMAKE_CXX_FLAGS_DEBUG "-O0 -DDEBUG -ggdb")
+
+  add_definitions(-D_GNU_SOURCE)
+  set(EXELINKFLAGS "-Wl,-rpath-link,'${CMAKE_LIBRARY_OUTPUT_DIRECTORY}'")
+endif()
+
+#check include files
+include(CheckIncludeFile)
+include(CheckSymbolExists)
+check_include_file(inttypes.h HAVE_INTTYPES_H)
+check_include_file(stdint.h HAVE_STDINT_H)
+check_include_file(stddef.h HAVE_STDDEF_H)
+check_include_file(stdarg.h HAVE_STDARG_H)
+if(NOT(HAVE_STDARG_H))
+  message(FATAL_ERROR "C header file stdarg.h not available for your platform. Cannot proceed.")
+endif()
+check_include_file(ctype.h HAVE_CTYPE_H)
+check_symbol_exists(isdigit ctype.h HAVE_ISDIGIT)
+if((NOT(HAVE_CTYPE_H)) OR (NOT(HAVE_ISDIGIT)))
+  message(FATAL_ERROR "C header file ctype.h or isdigit() function not available for your platform. Cannot proceed.")
+endif()
+
+#save build configuration to config.h
+configure_file(config.h.in config.h)
+
+#qt creator trick
+if(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES)
+  include_directories("${CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES}")
+endif(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES)
