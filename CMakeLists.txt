@@ -148,8 +148,15 @@ include_directories(
 )
 
 set(lib_SOURCES
-  "Lib/dummy.c"
-  "Lib/dummy.cpp"
+	  "Example/http_parser.c"
+		"Example/server.cc"
+		"Example/debug.cc"
+		"Example/util.cc"
+		"Example/keylog.cc"
+		"Example/crypto_openssl.cc"
+		"Example/crypto.cc"
+		"Example/http.cc"
+		"Example/shared.cc"
 )
 
 # Public shared library
