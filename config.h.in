@@ -5,5 +5,7 @@
 #cmakedefine HAVE_STDINT_H
 #cmakedefine HAVE_STDDEF_H
 #cmakedefine HAVE_PTHREAD_H
+#cmakedefine HAVE_ARPA_INET_H
+#cmakedefine HAVE_NETINET_IN_H
 
 #endif

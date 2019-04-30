@@ -115,6 +115,8 @@ endif()
 #check include files
 include(CheckIncludeFile)
 include(CheckSymbolExists)
+check_include_file(arpa/inet.h HAVE_ARPA_INET_H)
+check_include_file(netinet/in.h HAVE_NETINET_IN_H)
 check_include_file(inttypes.h HAVE_INTTYPES_H)
 check_include_file(stdint.h HAVE_STDINT_H)
 check_include_file(stddef.h HAVE_STDDEF_H)
@@ -138,6 +140,7 @@ endif(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES)
 
 include_directories(
   "${CMAKE_SOURCE_DIR}/Lib"
+	"${CMAKE_SOURCE_DIR}/Example"
   "${OPENSSL_INCLUDE_DIR}"
   "${LIBEV_INCLUDE}"
   "${LIBNGHTTP3_INCLUDE}"
