@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.10)
 project(ngtcp2_wrapper C CXX)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -44,7 +44,7 @@ else()
   message(STATUS "Found libev include dir: ${LIBEV_INCLUDE}")
 endif()
 
-find_library(LIBNGHTTP3_LIB NAMES nghttp3 PATHS "${CMAKE_SOURCE_DIR}/External/dist/nghttp3_${TARGET_OS}_${TARGET_ARCH}/${TARGET_LIBDIR}" NO_DEFAULT_PATH)
+find_library(LIBNGHTTP3_LIB NAMES nghttp3 PATHS "${CMAKE_SOURCE_DIR}/External/dist/nghttp3_${TARGET_OS}_${TARGET_ARCH}/${TARGET_LIBDIR}" "${CMAKE_SOURCE_DIR}/External/dist/nghttp3_${TARGET_OS}_${TARGET_ARCH}/lib" NO_DEFAULT_PATH)
 if(NOT LIBNGHTTP3_LIB)
   message(FATAL_ERROR "libnghttp3 not found")
 else()
@@ -58,7 +58,7 @@ else()
   message(STATUS "Found libnghttp3 include dir: ${LIBNGHTTP3_INCLUDE}")
 endif()
 
-find_library(LIBNGTCP2_LIB NAMES ngtcp2 PATHS "${CMAKE_SOURCE_DIR}/External/dist/ngtcp2_${TARGET_OS}_${TARGET_ARCH}/${TARGET_LIBDIR}" NO_DEFAULT_PATH)
+find_library(LIBNGTCP2_LIB NAMES ngtcp2 PATHS "${CMAKE_SOURCE_DIR}/External/dist/ngtcp2_${TARGET_OS}_${TARGET_ARCH}/${TARGET_LIBDIR}" "${CMAKE_SOURCE_DIR}/External/dist/ngtcp2_${TARGET_OS}_${TARGET_ARCH}/lib" NO_DEFAULT_PATH)
 if(NOT LIBNGTCP2_LIB)
   message(FATAL_ERROR "libngtcp2 not found")
 else()
@@ -137,7 +137,7 @@ if(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES)
 endif(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES)
 
 include_directories(
-  "${CMAKE_SOURCE_DIR}/lib"
+  "${CMAKE_SOURCE_DIR}/Lib"
   "${OPENSSL_INCLUDE_DIR}"
   "${LIBEV_INCLUDE}"
   "${LIBNGHTTP3_INCLUDE}"
