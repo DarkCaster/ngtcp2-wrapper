@@ -45,6 +45,7 @@
 #include "template.h"
 #include "shared.h"
 #include "buffer.h"
+#include <bits/unique_ptr.h>
 
 using namespace ngtcp2;
 
@@ -100,6 +101,8 @@ struct ClientConfig {
   std::string authority;
   std::string path;
 };
+
+extern ClientConfig clConfig;
 
 struct CLStream {
 		CLStream(int64_t stream_id);
@@ -254,5 +257,7 @@ private:
   // resumption_ is true if client attempts to resume session.
   bool resumption_;
 };
+
+extern int run(Client &c, const char *addr, const char *port);
 
 #endif // CLIENT_H
