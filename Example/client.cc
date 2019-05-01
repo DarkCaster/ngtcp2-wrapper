@@ -68,7 +68,7 @@ auto randgen = util::make_mt19937();
 } // namespace
 
 namespace {
-Config config{};
+ClientConfig config{};
 } // namespace
 
 CLStream::CLStream(int64_t stream_id) : stream_id(stream_id) {}
@@ -2989,8 +2989,8 @@ void print_usage() {
 } // namespace
 
 namespace {
-void config_set_default(Config &config) {
-  config = Config{};
+void config_set_default(ClientConfig &config) {
+	config = ClientConfig{};
   config.tx_loss_prob = 0.;
   config.rx_loss_prob = 0.;
   config.fd = -1;

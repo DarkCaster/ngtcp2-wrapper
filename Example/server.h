@@ -41,6 +41,7 @@
 #include <openssl/ssl.h>
 #include <openssl/evp.h>
 #include <ev.h>
+#include <memory>
 
 #include "network.h"
 #include "crypto.h"
@@ -50,7 +51,7 @@
 
 using namespace ngtcp2;
 
-struct Config {
+struct ServerConfig {
   Address preferred_ipv4_addr;
   Address preferred_ipv6_addr;
   // tx_loss_prob is probability of losing outgoing packet.

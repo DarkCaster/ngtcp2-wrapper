@@ -67,7 +67,7 @@ auto randgen = util::make_mt19937();
 } // namespace
 
 namespace {
-Config config{};
+ServerConfig config{};
 } // namespace
 
 namespace {
@@ -3652,8 +3652,8 @@ void print_usage() {
 } // namespace
 
 namespace {
-void config_set_default(Config &config) {
-  config = Config{};
+void config_set_default(ServerConfig &config) {
+	config = ServerConfig{};
   config.tx_loss_prob = 0.;
   config.rx_loss_prob = 0.;
   config.ciphers = "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_"
