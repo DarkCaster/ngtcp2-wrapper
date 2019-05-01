@@ -136,6 +136,7 @@ include_directories(
 	)
 
 set(lib_SOURCES
+	"Lib/buffer.cpp"
 	"Example/http_parser.c"
 	"Example/server.cc"
 	"Example/debug.cc"

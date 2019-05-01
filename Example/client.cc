@@ -71,20 +71,6 @@ namespace {
 Config config{};
 } // namespace
 
-CLBuffer::CLBuffer(const uint8_t *data, size_t datalen)
-    : buf{data, data + datalen},
-      begin(buf.data()),
-      head(begin),
-      tail(begin + datalen) {}
-
-CLBuffer::CLBuffer(uint8_t *begin, uint8_t *end)
-    : begin(begin), head(begin), tail(end) {}
-
-CLBuffer::CLBuffer(size_t datalen)
-    : buf(datalen), begin(buf.data()), head(begin), tail(begin) {}
-
-CLBuffer::CLBuffer() : begin(buf.data()), head(begin), tail(begin) {}
-
 CLStream::CLStream(int64_t stream_id) : stream_id(stream_id) {}
 
 CLStream::~CLStream() {}
@@ -2149,7 +2135,7 @@ int Client::handle_error() {
 }
 
 namespace {
-size_t remove_tx_stream_data(std::deque<CLBuffer> &d, uint64_t &tx_offset,
+size_t remove_tx_stream_data(std::deque<Buffer> &d, uint64_t &tx_offset,
                              uint64_t offset) {
   size_t len = 0;
   for (; !d.empty() && tx_offset + d.front().bufsize() <= offset;) {

@@ -46,6 +46,7 @@
 #include "crypto.h"
 #include "template.h"
 #include "shared.h"
+#include "buffer.h"
 
 using namespace ngtcp2;
 
@@ -74,34 +75,6 @@ struct Config {
   bool show_secret;
   // validate_addr is true if server requires address validation.
   bool validate_addr;
-};
-
-struct Buffer {
-  Buffer(const uint8_t *data, size_t datalen);
-  Buffer(uint8_t *begin, uint8_t *end);
-  explicit Buffer(size_t datalen);
-  Buffer();
-
-  size_t size() const { return tail - head; }
-  size_t left() const { return buf.data() + buf.size() - tail; }
-  uint8_t *const wpos() { return tail; }
-  const uint8_t *rpos() const { return head; }
-  void seek(size_t len) { head += len; }
-  void push(size_t len) { tail += len; }
-  void reset() { head = tail = begin; }
-  size_t bufsize() const { return tail - begin; }
-
-  std::vector<uint8_t> buf;
-  // begin points to the beginning of the buffer.  This might point to
-  // buf.data() if a buffer space is allocated by this object.  It is
-  // also allowed to point to the external shared buffer.
-  uint8_t *begin;
-  // head points to the position of the buffer where read should
-  // occur.
-  uint8_t *head;
-  // tail points to the position of the buffer where write should
-  // occur.
-  uint8_t *tail;
 };
 
 struct HTTPHeader {
