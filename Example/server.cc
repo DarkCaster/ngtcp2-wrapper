@@ -3732,7 +3732,7 @@ Options:
 }
 } // namespace
 
-int main(int argc, char **argv) {
+int main_sv(int argc, char **argv) {
   config_set_default(config);
 
   for (;;) {
