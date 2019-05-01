@@ -100,11 +100,11 @@ struct Config {
   std::string path;
 };
 
-struct Buffer {
-  Buffer(const uint8_t *data, size_t datalen);
-  Buffer(uint8_t *begin, uint8_t *end);
-  explicit Buffer(size_t datalen);
-  Buffer();
+struct CLBuffer {
+		CLBuffer(const uint8_t *data, size_t datalen);
+	CLBuffer(uint8_t *begin, uint8_t *end);
+	explicit CLBuffer(size_t datalen);
+	CLBuffer();
 
   size_t size() const { return tail - head; }
   size_t left() const { return buf.data() + buf.size() - tail; }
@@ -131,16 +131,16 @@ struct Buffer {
   uint8_t *tail;
 };
 
-struct Stream {
-  Stream(int64_t stream_id);
-  ~Stream();
+struct CLStream {
+		CLStream(int64_t stream_id);
+	~CLStream();
 
   int64_t stream_id;
 };
 
 struct Crypto {
   /* data is unacknowledged data. */
-  std::deque<Buffer> data;
+		std::deque<CLBuffer> data;
   /* acked_offset is the size of acknowledged crypto data removed from
      |data| so far */
   uint64_t acked_offset;
@@ -257,7 +257,7 @@ private:
   SSL_CTX *ssl_ctx_;
   SSL *ssl_;
   int fd_;
-  std::map<int64_t, std::unique_ptr<Stream>> streams_;
+	std::map<int64_t, std::unique_ptr<CLStream>> streams_;
   Crypto crypto_[3];
   ngtcp2_crypto_level tx_crypto_level_;
   ngtcp2_crypto_level rx_crypto_level_;
@@ -275,7 +275,7 @@ private:
   crypto::Context crypto_ctx_;
   QUICError last_error_;
   // common buffer used to store packet data before sending
-  Buffer sendbuf_;
+	CLBuffer sendbuf_;
   // nstreams_done_ is the number of streams opened.
   uint64_t nstreams_done_;
   // nkey_update_ is the number of key update occurred.

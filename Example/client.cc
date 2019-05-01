@@ -43,7 +43,7 @@
 #include <openssl/bio.h>
 #include <openssl/err.h>
 
-#include <http-parser/http_parser.h>
+#include "http_parser.h"
 
 #include "client.h"
 #include "network.h"
@@ -52,6 +52,14 @@
 #include "crypto.h"
 #include "shared.h"
 #include "keylog.h"
+
+#include "config.h"
+#ifdef HAVE_ARPA_INET_H
+#  include <arpa/inet.h>
+#endif // HAVE_ARPA_INET_H
+#ifdef HAVE_NETINET_IN_H
+#  include <netinet/in.h>
+#endif
 
 using namespace ngtcp2;
 
@@ -63,20 +71,23 @@ namespace {
 Config config{};
 } // namespace
 
-Buffer::Buffer(const uint8_t *data, size_t datalen)
+CLBuffer::CLBuffer(const uint8_t *data, size_t datalen)
     : buf{data, data + datalen},
       begin(buf.data()),
       head(begin),
       tail(begin + datalen) {}
-Buffer::Buffer(uint8_t *begin, uint8_t *end)
+
+CLBuffer::CLBuffer(uint8_t *begin, uint8_t *end)
     : begin(begin), head(begin), tail(end) {}
-Buffer::Buffer(size_t datalen)
+
+CLBuffer::CLBuffer(size_t datalen)
     : buf(datalen), begin(buf.data()), head(begin), tail(begin) {}
-Buffer::Buffer() : begin(buf.data()), head(begin), tail(begin) {}
 
-Stream::Stream(int64_t stream_id) : stream_id(stream_id) {}
+CLBuffer::CLBuffer() : begin(buf.data()), head(begin), tail(begin) {}
 
-Stream::~Stream() {}
+CLStream::CLStream(int64_t stream_id) : stream_id(stream_id) {}
+
+CLStream::~CLStream() {}
 
 namespace {
 int key_cb(SSL *ssl, int name, const unsigned char *secret, size_t secretlen,
@@ -2138,7 +2149,7 @@ int Client::handle_error() {
 }
 
 namespace {
-size_t remove_tx_stream_data(std::deque<Buffer> &d, uint64_t &tx_offset,
+size_t remove_tx_stream_data(std::deque<CLBuffer> &d, uint64_t &tx_offset,
                              uint64_t offset) {
   size_t len = 0;
   for (; !d.empty() && tx_offset + d.front().bufsize() <= offset;) {
@@ -2280,7 +2291,7 @@ void Client::make_stream_early() {
     return;
   }
 
-  auto stream = std::make_unique<Stream>(stream_id);
+	auto stream = std::make_unique<CLStream>(stream_id);
   streams_.emplace(stream_id, std::move(stream));
 }
 
@@ -2303,7 +2314,7 @@ int Client::on_extend_max_streams() {
       break;
     }
 
-    auto stream = std::make_unique<Stream>(stream_id);
+		auto stream = std::make_unique<CLStream>(stream_id);
     streams_.emplace(stream_id, std::move(stream));
   }
   return 0;
@@ -3086,7 +3097,7 @@ Options:
 }
 } // namespace
 
-int main(int argc, char **argv) {
+int main_cl(int argc, char **argv) {
   config_set_default(config);
   char *data_path = nullptr;
 

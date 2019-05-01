@@ -145,7 +145,8 @@ set(lib_SOURCES
 	"Example/crypto.cc"
 	"Example/http.cc"
 	"Example/shared.cc"
-	)
+	"Example/client.cc"
+)
 
 # Public shared library
 add_library(ngtcp2_wrapper SHARED ${lib_SOURCES})
