@@ -97,7 +97,7 @@ int alpn_select_proto_cb(SSL *ssl, const unsigned char **out,
 		alpnlen = str_size(NGTCP2_ALPN_H3);
 			break;
 		default:
-			if (!config.quiet) {
+			if (!svConfig.quiet) {
 			std::cerr << "Unexpected quic protocol version: " << std::hex << "0x"
 			          << version << std::endl;
 		}
@@ -112,7 +112,7 @@ int alpn_select_proto_cb(SSL *ssl, const unsigned char **out,
 		}
 	}
 
-	if (!config.quiet) {
+	if (!svConfig.quiet) {
 		std::cerr << "Client did not present ALPN " << NGTCP2_ALPN_H3 + 1
 		          << std::endl;
 	}
@@ -131,13 +131,13 @@ SSL_CTX *create_ssl_ctx(const char *private_key_file, const char *cert_file) {
 	SSL_CTX_set_options(ssl_ctx, ssl_opts);
 	SSL_CTX_clear_options(ssl_ctx, SSL_OP_ENABLE_MIDDLEBOX_COMPAT);
 
-	if (SSL_CTX_set_ciphersuites(ssl_ctx, config.ciphers) != 1) {
+	if (SSL_CTX_set_ciphersuites(ssl_ctx, svConfig.ciphers) != 1) {
 		std::cerr << "SSL_CTX_set_ciphersuites: "
 		          << ERR_error_string(ERR_get_error(), nullptr) << std::endl;
 		goto fail;
 	}
 
-	if (SSL_CTX_set1_groups_list(ssl_ctx, config.groups) != 1) {
+	if (SSL_CTX_set1_groups_list(ssl_ctx, svConfig.groups) != 1) {
 		std::cerr << "SSL_CTX_set1_groups_list failed" << std::endl;
 		goto fail;
 	}
@@ -276,7 +276,7 @@ void print_usage() {
 void print_help() {
 	print_usage();
 
-	config_set_default(config);
+	config_set_default(svConfig);
 
 	std::cout << R"(
 	<ADDR>      Address to listen to.  '*' binds to any address.
@@ -297,11 +297,11 @@ Options:
 	--ciphers=<CIPHERS>
 							Specify the cipher suite list to enable.
 							Default: )"
-						<< config.ciphers << R"(
+	          << svConfig.ciphers << R"(
 	--groups=<GROUPS>
 							Specify the supported groups.
 							Default: )"
-						<< config.groups << R"(
+	          << svConfig.groups << R"(
 	-d, --htdocs=<PATH>
 							Specify document root.  If this option is not specified,
 							the document root is the current working directory.
@@ -311,7 +311,7 @@ Options:
 	--timeout=<T>
 							Specify idle timeout in milliseconds.
 							Default: )"
-						<< config.timeout << R"(
+	          << svConfig.timeout << R"(
 	-V, --validate-addr
 							Perform address validation.
 	--preferred-ipv4-addr=<ADDR>:<PORT>
@@ -325,7 +325,7 @@ Options:
 }
 
 int main(int argc, char **argv) {
-	config_set_default(config);
+	config_set_default(svConfig);
 
 	for (;;) {
 		static int flag = 0;
@@ -357,7 +357,7 @@ int main(int argc, char **argv) {
 				std::cerr << "path: invalid path " << optarg << std::endl;
 				exit(EXIT_FAILURE);
 			}
-			config.htdocs = path;
+			svConfig.htdocs = path;
 			free(path);
 			break;
 			}
@@ -367,23 +367,23 @@ int main(int argc, char **argv) {
 			exit(EXIT_SUCCESS);
 			case 'q':
 				// -quiet
-				config.quiet = true;
+				svConfig.quiet = true;
 				break;
 			case 'r':
 				// --rx-loss
-				config.rx_loss_prob = strtod(optarg, nullptr);
+				svConfig.rx_loss_prob = strtod(optarg, nullptr);
 				break;
 			case 's':
 				// --show-secret
-				config.show_secret = true;
+				svConfig.show_secret = true;
 				break;
 			case 't':
 				// --tx-loss
-				config.tx_loss_prob = strtod(optarg, nullptr);
+				svConfig.tx_loss_prob = strtod(optarg, nullptr);
 				break;
 			case 'V':
 				// --validate-addr
-				config.validate_addr = true;
+				svConfig.validate_addr = true;
 				break;
 			case '?':
 				print_usage();
@@ -392,19 +392,19 @@ int main(int argc, char **argv) {
 				switch (flag) {
 				case 1:
 					// --ciphers
-					config.ciphers = optarg;
+					svConfig.ciphers = optarg;
 					break;
 				case 2:
 					// --groups
-					config.groups = optarg;
+					svConfig.groups = optarg;
 					break;
 				case 3:
 					// --timeout
-					config.timeout = strtol(optarg, nullptr, 10);
+					svConfig.timeout = strtol(optarg, nullptr, 10);
 					break;
 				case 4:
 					// --preferred-ipv4-addr
-					if (parse_host_port(config.preferred_ipv4_addr, AF_INET, optarg,
+					if (parse_host_port(svConfig.preferred_ipv4_addr, AF_INET, optarg,
 														optarg + strlen(optarg)) != 0) {
 					std::cerr << "preferred-ipv4-addr: could not use '" << optarg << "'"
 										<< std::endl;
@@ -413,7 +413,7 @@ int main(int argc, char **argv) {
 					break;
 				case 5:
 					// --preferred-ipv6-addr
-					if (parse_host_port(config.preferred_ipv6_addr, AF_INET6, optarg,
+					if (parse_host_port(svConfig.preferred_ipv6_addr, AF_INET6, optarg,
 														optarg + strlen(optarg)) != 0) {
 					std::cerr << "preferred-ipv6-addr: could not use '" << optarg << "'"
 										<< std::endl;
@@ -439,7 +439,7 @@ int main(int argc, char **argv) {
 	auto cert_file = argv[optind++];
 
 	errno = 0;
-	config.port = strtoul(port, nullptr, 10);
+	svConfig.port = strtoul(port, nullptr, 10);
 	if (errno != 0) {
 		std::cerr << "port: invalid port number" << std::endl;
 		exit(EXIT_FAILURE);
@@ -450,11 +450,11 @@ int main(int argc, char **argv) {
 		exit(EXIT_FAILURE);
 	}
 
-	if (config.htdocs.back() != '/') {
-		config.htdocs += '/';
+	if (svConfig.htdocs.back() != '/') {
+		svConfig.htdocs += '/';
 	}
 
-	std::cerr << "Using document root " << config.htdocs << std::endl;
+	std::cerr << "Using document root " << svConfig.htdocs << std::endl;
 
 	auto ssl_ctx_d = defer(SSL_CTX_free, ssl_ctx);
 

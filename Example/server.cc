@@ -66,7 +66,7 @@ namespace {
 auto randgen = util::make_mt19937();
 } // namespace
 
-ServerConfig config{};
+ServerConfig svConfig{};
 
 namespace {
 int key_cb(SSL *ssl, int name, const unsigned char *secret, size_t secretlen,
@@ -135,7 +135,7 @@ int Handler::on_key(int name, const uint8_t *secret, size_t secretlen) {
 
   switch (name) {
   case SSL_KEY_CLIENT_EARLY_TRAFFIC: {
-    if (!config.quiet) {
+			if (!svConfig.quiet) {
       std::cerr << "client_early_traffic" << std::endl;
     }
     ngtcp2_conn_install_early_keys(conn_, key.data(), keylen, iv.data(), ivlen,
@@ -146,7 +146,7 @@ int Handler::on_key(int name, const uint8_t *secret, size_t secretlen) {
     break;
   }
   case SSL_KEY_CLIENT_HANDSHAKE_TRAFFIC:
-    if (!config.quiet) {
+			if (!svConfig.quiet) {
       std::cerr << "client_handshake_traffic" << std::endl;
     }
     ngtcp2_conn_install_handshake_rx_keys(conn_, key.data(), keylen, iv.data(),
@@ -154,14 +154,14 @@ int Handler::on_key(int name, const uint8_t *secret, size_t secretlen) {
     rx_crypto_level_ = NGTCP2_CRYPTO_LEVEL_HANDSHAKE;
     break;
   case SSL_KEY_CLIENT_APPLICATION_TRAFFIC:
-    if (!config.quiet) {
+			if (!svConfig.quiet) {
       std::cerr << "client_application_traffic" << std::endl;
     }
     ngtcp2_conn_install_rx_keys(conn_, key.data(), keylen, iv.data(), ivlen,
                                 hp.data(), hplen);
     break;
   case SSL_KEY_SERVER_HANDSHAKE_TRAFFIC:
-    if (!config.quiet) {
+			if (!svConfig.quiet) {
       std::cerr << "server_handshake_traffic" << std::endl;
     }
     ngtcp2_conn_install_handshake_tx_keys(conn_, key.data(), keylen, iv.data(),
@@ -169,7 +169,7 @@ int Handler::on_key(int name, const uint8_t *secret, size_t secretlen) {
     tx_crypto_level_ = NGTCP2_CRYPTO_LEVEL_HANDSHAKE;
     break;
   case SSL_KEY_SERVER_APPLICATION_TRAFFIC:
-    if (!config.quiet) {
+			if (!svConfig.quiet) {
       std::cerr << "server_application_traffic" << std::endl;
     }
     ngtcp2_conn_install_tx_keys(conn_, key.data(), keylen, iv.data(), ivlen,
@@ -178,7 +178,7 @@ int Handler::on_key(int name, const uint8_t *secret, size_t secretlen) {
     break;
   }
 
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     debug::print_secrets(secret, secretlen, key.data(), keylen, iv.data(),
                          ivlen, hp.data(), hplen);
   }
@@ -189,7 +189,7 @@ int Handler::on_key(int name, const uint8_t *secret, size_t secretlen) {
 namespace {
 void msg_cb(int write_p, int version, int content_type, const void *buf,
             size_t len, SSL *ssl, void *arg) {
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     std::cerr << "msg_cb: write_p=" << write_p << " version=" << version
               << " content_type=" << content_type << " len=" << len
               << std::endl;
@@ -344,7 +344,7 @@ std::string make_status_body(unsigned int status_code) {
   body += "</h1><hr><address>";
   body += NGTCP2_SERVER;
   body += " at port ";
-  body += std::to_string(config.port);
+	body += std::to_string(svConfig.port);
   body += "</address>";
   body += "</body></html>";
   return body;
@@ -410,7 +410,7 @@ Request request_path(const std::string &uri, bool is_connect) {
 
 namespace {
 std::string resolve_path(const std::string &req_path) {
-  auto raw_path = config.htdocs + req_path;
+	auto raw_path = svConfig.htdocs + req_path;
   auto malloced_path = realpath(raw_path.c_str(), nullptr);
   if (malloced_path == nullptr) {
     return "";
@@ -418,8 +418,8 @@ std::string resolve_path(const std::string &req_path) {
   auto path = std::string(malloced_path);
   free(malloced_path);
 
-  if (path.size() < config.htdocs.size() ||
-      !std::equal(std::begin(config.htdocs), std::end(config.htdocs),
+	if (path.size() < svConfig.htdocs.size() ||
+	    !std::equal(std::begin(svConfig.htdocs), std::end(svConfig.htdocs),
                   std::begin(path))) {
     return "";
   }
@@ -704,7 +704,7 @@ int Stream::start_response(nghttp3_conn *httpconn) {
     if (fstat(fd, &st) == 0) {
       if (st.st_mode & S_IFDIR) {
         send_redirect_response(httpconn, 308,
-                               path.substr(config.htdocs.size() - 1) + '/');
+				                       path.substr(svConfig.htdocs.size() - 1) + '/');
         return 0;
       }
       content_length = st.st_size;
@@ -752,7 +752,7 @@ int Stream::start_response(nghttp3_conn *httpconn) {
       util::make_nv("content-length", content_length_str),
   };
 
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     debug::print_http_response_headers(stream_id, nva.data(), nva.size());
   }
 
@@ -793,7 +793,7 @@ void timeoutcb(struct ev_loop *loop, ev_timer *w, int revents) {
   auto s = h->server();
 
   if (ngtcp2_conn_is_in_closing_period(h->conn())) {
-    if (!config.quiet) {
+		if (!svConfig.quiet) {
       std::cerr << "Closing Period is over" << std::endl;
     }
 
@@ -801,7 +801,7 @@ void timeoutcb(struct ev_loop *loop, ev_timer *w, int revents) {
     return;
   }
   if (h->draining()) {
-    if (!config.quiet) {
+		if (!svConfig.quiet) {
       std::cerr << "Draining Period is over" << std::endl;
     }
 
@@ -809,7 +809,7 @@ void timeoutcb(struct ev_loop *loop, ev_timer *w, int revents) {
     return;
   }
 
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     std::cerr << "Timeout" << std::endl;
   }
 
@@ -826,11 +826,11 @@ void retransmitcb(struct ev_loop *loop, ev_timer *w, int revents) {
   auto conn = h->conn();
   auto now = util::timestamp(loop);
 
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     std::cerr << "Timer expired" << std::endl;
   }
   if (ngtcp2_conn_loss_detection_expiry(conn) <= now) {
-    if (!config.quiet) {
+		if (!svConfig.quiet) {
       std::cerr << "Loss detection timer expired" << std::endl;
     }
     rv = ngtcp2_conn_on_loss_detection_timer(conn, util::timestamp(loop));
@@ -854,7 +854,7 @@ void retransmitcb(struct ev_loop *loop, ev_timer *w, int revents) {
   }
 
   if (ngtcp2_conn_ack_delay_expiry(conn) <= now) {
-    if (!config.quiet) {
+		if (!svConfig.quiet) {
       std::cerr << "Delayed ACK timer expired" << std::endl;
     }
     rv = h->on_write();
@@ -897,14 +897,14 @@ Handler::Handler(struct ev_loop *loop, SSL_CTX *ssl_ctx, Server *server,
       nkey_update_(0),
       initial_(true),
       draining_(false) {
-  ev_timer_init(&timer_, timeoutcb, 0., config.timeout / 1000.);
+	ev_timer_init(&timer_, timeoutcb, 0., svConfig.timeout / 1000.);
   timer_.data = this;
   ev_timer_init(&rttimer_, retransmitcb, 0., 0.);
   rttimer_.data = this;
 }
 
 Handler::~Handler() {
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     std::cerr << "Closing QUIC connection" << std::endl;
   }
 
@@ -941,7 +941,7 @@ namespace {
 int handshake_completed(ngtcp2_conn *conn, void *user_data) {
   auto h = static_cast<Handler *>(user_data);
 
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     debug::handshake_completed(conn, user_data);
   }
 
@@ -1041,7 +1041,7 @@ ssize_t do_in_hp_mask(ngtcp2_conn *conn, uint8_t *dest, size_t destlen,
     return NGTCP2_ERR_CALLBACK_FAILURE;
   }
 
-  if (!config.quiet && config.show_secret) {
+	if (!svConfig.quiet && svConfig.show_secret) {
     debug::print_hp_mask(dest, destlen, sample, samplelen);
   }
 
@@ -1060,7 +1060,7 @@ ssize_t do_hp_mask(ngtcp2_conn *conn, uint8_t *dest, size_t destlen,
     return NGTCP2_ERR_CALLBACK_FAILURE;
   }
 
-  if (!config.quiet && config.show_secret) {
+	if (!svConfig.quiet && svConfig.show_secret) {
     debug::print_hp_mask(dest, destlen, sample, samplelen);
   }
 
@@ -1074,7 +1074,7 @@ int recv_crypto_data(ngtcp2_conn *conn, ngtcp2_crypto_level crypto_level,
                      void *user_data) {
   int rv;
 
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     debug::print_crypto_data(crypto_level, data, datalen);
   }
 
@@ -1185,7 +1185,7 @@ int Handler::push_content(int64_t stream_id, const std::string &authority,
     return 0;
   }
 
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     debug::print_http_push_promise(stream_id, push_id, nva.data(), nva.size());
   }
 
@@ -1200,7 +1200,7 @@ int Handler::push_content(int64_t stream_id, const std::string &authority,
     return 0;
   }
 
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     debug::push_stream(push_id, push_stream_id);
   }
 
@@ -1312,7 +1312,7 @@ int update_key(ngtcp2_conn *conn, void *user_data) {
 namespace {
 int path_validation(ngtcp2_conn *conn, const ngtcp2_path *path,
                     ngtcp2_path_validation_result res, void *user_data) {
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     debug::path_validation(path, res);
   }
   return 0;
@@ -1339,7 +1339,7 @@ void Handler::extend_max_remote_streams_bidi(uint64_t max_streams) {
 namespace {
 int http_recv_data(nghttp3_conn *conn, int64_t stream_id, const uint8_t *data,
                    size_t datalen, void *user_data, void *stream_user_data) {
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     debug::print_http_data(stream_id, data, datalen);
   }
   auto h = static_cast<Handler *>(user_data);
@@ -1366,7 +1366,7 @@ void Handler::http_consume(int64_t stream_id, size_t nconsumed) {
 namespace {
 int http_begin_request_headers(nghttp3_conn *conn, int64_t stream_id,
                                void *user_data, void *stream_user_data) {
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     debug::print_http_begin_request_headers(stream_id);
   }
 
@@ -1389,7 +1389,7 @@ int http_recv_request_header(nghttp3_conn *conn, int64_t stream_id,
                              int32_t token, nghttp3_rcbuf *name,
                              nghttp3_rcbuf *value, uint8_t flags,
                              void *user_data, void *stream_user_data) {
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     debug::print_http_header(stream_id, name, value, flags);
   }
 
@@ -1423,7 +1423,7 @@ void Handler::http_recv_request_header(int64_t stream_id, int32_t token,
 namespace {
 int http_end_request_headers(nghttp3_conn *conn, int64_t stream_id,
                              void *user_data, void *stream_user_data) {
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     debug::print_http_end_headers(stream_id);
   }
 
@@ -1520,7 +1520,7 @@ int Handler::setup_httpconn() {
     return -1;
   }
 
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     fprintf(stderr, "http: control stream=%" PRIx64 "\n", ctrl_stream_id);
   }
 
@@ -1548,7 +1548,7 @@ int Handler::setup_httpconn() {
     return -1;
   }
 
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     fprintf(stderr,
             "http: QPACK streams encoder=%" PRIx64 " decoder=%" PRIx64 "\n",
             qpack_enc_stream_id, qpack_dec_stream_id);
@@ -1645,7 +1645,7 @@ int Handler::init(const Endpoint &ep, const sockaddr *sa, socklen_t salen,
 
   ngtcp2_settings settings;
   ngtcp2_settings_default(&settings);
-  settings.log_printf = config.quiet ? nullptr : debug::log_printf;
+	settings.log_printf = svConfig.quiet ? nullptr : debug::log_printf;
   settings.initial_ts = util::timestamp(loop_);
   settings.max_stream_data_bidi_local = 256_k;
   settings.max_stream_data_bidi_remote = 256_k;
@@ -1653,7 +1653,7 @@ int Handler::init(const Endpoint &ep, const sockaddr *sa, socklen_t salen,
   settings.max_data = 1_m;
   settings.max_streams_bidi = 100;
   settings.max_streams_uni = 3;
-  settings.idle_timeout = config.timeout;
+	settings.idle_timeout = svConfig.timeout;
   settings.stateless_reset_token_present = 1;
 
   auto dis = std::uniform_int_distribution<uint8_t>(0, 255);
@@ -1665,18 +1665,18 @@ int Handler::init(const Endpoint &ep, const sockaddr *sa, socklen_t salen,
   std::generate(scid_.data, scid_.data + scid_.datalen,
                 [&dis]() { return dis(randgen); });
 
-  if (config.preferred_ipv4_addr.len || config.preferred_ipv6_addr.len) {
+	if (svConfig.preferred_ipv4_addr.len || svConfig.preferred_ipv6_addr.len) {
     settings.preferred_address_present = 1;
-    if (config.preferred_ipv4_addr.len) {
+		if (svConfig.preferred_ipv4_addr.len) {
       auto &dest = settings.preferred_address.ipv4_addr;
-      const auto &addr = config.preferred_ipv4_addr;
+			const auto &addr = svConfig.preferred_ipv4_addr;
       assert(sizeof(dest) == sizeof(addr.su.in.sin_addr));
       memcpy(&dest, &addr.su.in.sin_addr, sizeof(dest));
       settings.preferred_address.ipv4_port = htons(addr.su.in.sin_port);
     }
-    if (config.preferred_ipv6_addr.len) {
+		if (svConfig.preferred_ipv6_addr.len) {
       auto &dest = settings.preferred_address.ipv6_addr;
-      const auto &addr = config.preferred_ipv6_addr;
+			const auto &addr = svConfig.preferred_ipv6_addr;
       assert(sizeof(dest) == sizeof(addr.su.in6.sin6_addr));
       memcpy(&dest, &addr.su.in6.sin6_addr, sizeof(dest));
       settings.preferred_address.ipv6_port = htons(addr.su.in6.sin6_port);
@@ -1725,7 +1725,7 @@ int Handler::tls_handshake() {
     initial_ = false;
     switch (rv) {
     case SSL_READ_EARLY_DATA_ERROR: {
-      if (!config.quiet) {
+				if (!svConfig.quiet) {
         std::cerr << "SSL_READ_EARLY_DATA_ERROR" << std::endl;
       }
       auto err = SSL_get_error(ssl_, rv);
@@ -1745,7 +1745,7 @@ int Handler::tls_handshake() {
       break;
     }
     case SSL_READ_EARLY_DATA_SUCCESS:
-      if (!config.quiet) {
+				if (!svConfig.quiet) {
         std::cerr << "SSL_READ_EARLY_DATA_SUCCESS" << std::endl;
       }
       // Reading 0-RTT data in TLS stream is a protocol violation.
@@ -1754,7 +1754,7 @@ int Handler::tls_handshake() {
       }
       break;
     case SSL_READ_EARLY_DATA_FINISH:
-      if (!config.quiet) {
+				if (!svConfig.quiet) {
         std::cerr << "SSL_READ_EARLY_DATA_FINISH" << std::endl;
       }
       break;
@@ -1784,7 +1784,7 @@ int Handler::tls_handshake() {
   // is out of interest.
   ngtcp2_conn_handshake_completed(conn_);
 
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     std::cerr << "Negotiated cipher suite is " << SSL_get_cipher_name(ssl_)
               << std::endl;
 
@@ -1877,7 +1877,7 @@ int Handler::recv_client_initial(const ngtcp2_cid *dcid) {
     return -1;
   }
 
-  if (!config.quiet && config.show_secret) {
+	if (!svConfig.quiet && svConfig.show_secret) {
     debug::print_initial_secret(initial_secret.data(), initial_secret.size());
   }
 
@@ -1911,7 +1911,7 @@ int Handler::recv_client_initial(const ngtcp2_cid *dcid) {
     return -1;
   }
 
-  if (!config.quiet && config.show_secret) {
+	if (!svConfig.quiet && svConfig.show_secret) {
     debug::print_server_in_secret(secret.data(), secret.size());
     debug::print_server_pp_key(key.data(), keylen);
     debug::print_server_pp_iv(iv.data(), ivlen);
@@ -1947,7 +1947,7 @@ int Handler::recv_client_initial(const ngtcp2_cid *dcid) {
     return -1;
   }
 
-  if (!config.quiet && config.show_secret) {
+	if (!svConfig.quiet && svConfig.show_secret) {
     debug::print_client_in_secret(secret.data(), secret.size());
     debug::print_client_pp_key(key.data(), keylen);
     debug::print_client_pp_iv(iv.data(), ivlen);
@@ -2330,7 +2330,7 @@ void Handler::start_draining_period() {
   timer_.repeat = 15.;
   ev_timer_again(loop_, &timer_);
 
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     std::cerr << "Draining period has started" << std::endl;
   }
 }
@@ -2345,7 +2345,7 @@ int Handler::start_closing_period() {
   timer_.repeat = 15.;
   ev_timer_again(loop_, &timer_);
 
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     std::cerr << "Closing period has started" << std::endl;
   }
 
@@ -2400,7 +2400,7 @@ int Handler::handle_error() {
 }
 
 int Handler::send_conn_close() {
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     std::cerr << "Closing Period: TX CONNECTION_CLOSE" << std::endl;
   }
 
@@ -2420,7 +2420,7 @@ void Handler::schedule_retransmit() {
   auto now = util::timestamp(loop_);
   auto t = expiry < now ? 1e-9
                         : static_cast<ev_tstamp>(expiry - now) / NGTCP2_SECONDS;
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     std::cerr << "Set timer=" << std::fixed << t << "s" << std::endl;
   }
   rttimer_.repeat = t;
@@ -2429,7 +2429,7 @@ void Handler::schedule_retransmit() {
 
 int Handler::recv_stream_data(int64_t stream_id, uint8_t fin,
                               const uint8_t *data, size_t datalen) {
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     debug::print_stream_data(stream_id, data, datalen);
   }
 
@@ -2486,7 +2486,7 @@ int Handler::update_key() {
     return -1;
   }
 
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     std::cerr << "server_application_traffic " << nkey_update_ << std::endl;
     debug::print_secrets(secret.data(), secretlen, key.data(), keylen,
                          iv.data(), ivlen);
@@ -2520,7 +2520,7 @@ int Handler::update_key() {
     return -1;
   }
 
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     std::cerr << "client_application_traffic " << nkey_update_ << std::endl;
     debug::print_secrets(secret.data(), secretlen, key.data(), keylen,
                          iv.data(), ivlen);
@@ -2562,7 +2562,7 @@ void Handler::remove_tx_crypto_data(ngtcp2_crypto_level crypto_level,
 }
 
 int Handler::on_stream_close(int64_t stream_id) {
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     std::cerr << "QUIC stream " << stream_id << " closed" << std::endl;
   }
 
@@ -2635,7 +2635,7 @@ Server::~Server() {
 }
 
 void Server::disconnect() {
-  config.tx_loss_prob = 0;
+	svConfig.tx_loss_prob = 0;
 
   for (auto &ep : endpoints_) {
     ev_io_stop(loop_, &ep.rev);
@@ -2802,12 +2802,12 @@ int Server::init(const char *addr, const char *port) {
     return -1;
   }
 
-  if (config.preferred_ipv4_addr.len &&
-      add_endpoint(endpoints_, config.preferred_ipv4_addr) != 0) {
+	if (svConfig.preferred_ipv4_addr.len &&
+	    add_endpoint(endpoints_, svConfig.preferred_ipv4_addr) != 0) {
     return -1;
   }
-  if (config.preferred_ipv6_addr.len &&
-      add_endpoint(endpoints_, config.preferred_ipv6_addr) != 0) {
+	if (svConfig.preferred_ipv6_addr.len &&
+	    add_endpoint(endpoints_, svConfig.preferred_ipv6_addr) != 0) {
     return -1;
   }
 
@@ -2863,15 +2863,15 @@ int Server::on_read(Endpoint &ep) {
       return 0;
     }
 
-    if (!config.quiet) {
+		if (!svConfig.quiet) {
       std::cerr << "Received packet: local="
                 << util::straddr(&ep.addr.su.sa, ep.addr.len)
                 << " remote=" << util::straddr(&su.sa, addrlen) << " " << nread
                 << " bytes" << std::endl;
     }
 
-    if (debug::packet_lost(config.rx_loss_prob)) {
-      if (!config.quiet) {
+		if (debug::packet_lost(svConfig.rx_loss_prob)) {
+			if (!svConfig.quiet) {
         std::cerr << "** Simulated incoming packet loss **" << std::endl;
       }
       return 0;
@@ -2902,7 +2902,7 @@ int Server::on_read(Endpoint &ep) {
       if (ctos_it == std::end(ctos_)) {
         rv = ngtcp2_accept(&hd, buf.data(), nread);
         if (rv == -1) {
-          if (!config.quiet) {
+					if (!svConfig.quiet) {
             std::cerr << "Unexpected packet received: length=" << nread
                       << std::endl;
           }
@@ -2910,7 +2910,7 @@ int Server::on_read(Endpoint &ep) {
         }
 
         if (rv == 1) {
-          if (!config.quiet) {
+					if (!svConfig.quiet) {
             std::cerr << "Unsupported version: Send Version Negotiation"
                       << std::endl;
           }
@@ -2920,7 +2920,7 @@ int Server::on_read(Endpoint &ep) {
 
         ngtcp2_cid ocid;
         ngtcp2_cid *pocid = nullptr;
-        if (config.validate_addr && hd.type == NGTCP2_PKT_INITIAL) {
+				if (svConfig.validate_addr && hd.type == NGTCP2_PKT_INITIAL) {
           std::cerr << "Perform stateless address validation" << std::endl;
           if (hd.tokenlen == 0 ||
               verify_token(&ocid, &hd, &su.sa, addrlen) != 0) {
@@ -2959,7 +2959,7 @@ int Server::on_read(Endpoint &ep) {
         handlers_.emplace(scid_key, std::move(h));
         return 0;
       }
-      if (!config.quiet) {
+			if (!svConfig.quiet) {
         std::cerr << "Forward CID=" << util::format_hex((*ctos_it).first)
                   << " to CID=" << util::format_hex((*ctos_it).second)
                   << std::endl;
@@ -3075,7 +3075,7 @@ int Server::send_retry(const ngtcp2_pkt_hd *chd, Endpoint &ep,
     return -1;
   }
 
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     std::cerr << "Sending Retry packet to [" << host.data()
               << "]:" << port.data() << std::endl;
   }
@@ -3087,7 +3087,7 @@ int Server::send_retry(const ngtcp2_pkt_hd *chd, Endpoint &ep,
     return -1;
   }
 
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     std::cerr << "Generated address validation token:" << std::endl;
     util::hexdump(stderr, token.data(), tokenlen);
   }
@@ -3227,18 +3227,18 @@ int Server::verify_token(ngtcp2_cid *ocid, const ngtcp2_pkt_hd *hd,
     return -1;
   }
 
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     std::cerr << "Verifying token from [" << host.data() << "]:" << port.data()
               << std::endl;
   }
 
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     std::cerr << "Received address validation token:" << std::endl;
     util::hexdump(stderr, hd->token, hd->tokenlen);
   }
 
   if (hd->tokenlen < TOKEN_RAND_DATALEN) {
-    if (!config.quiet) {
+		if (!svConfig.quiet) {
       std::cerr << "Token is too short" << std::endl;
     }
     return -1;
@@ -3264,14 +3264,14 @@ int Server::verify_token(ngtcp2_cid *ocid, const ngtcp2_pkt_hd *hd,
                            iv.data(), ivlen,
                            reinterpret_cast<const uint8_t *>(sa), salen);
   if (n < 0) {
-    if (!config.quiet) {
+		if (!svConfig.quiet) {
       std::cerr << "Could not decrypt token" << std::endl;
     }
     return -1;
   }
 
   if (static_cast<size_t>(n) < salen + sizeof(uint64_t)) {
-    if (!config.quiet) {
+		if (!svConfig.quiet) {
       std::cerr << "Bad token construction" << std::endl;
     }
     return -1;
@@ -3279,14 +3279,14 @@ int Server::verify_token(ngtcp2_cid *ocid, const ngtcp2_pkt_hd *hd,
 
   auto cil = static_cast<size_t>(n) - salen - sizeof(uint64_t);
   if (cil != 0 && (cil < NGTCP2_MIN_CIDLEN || cil > NGTCP2_MAX_CIDLEN)) {
-    if (!config.quiet) {
+		if (!svConfig.quiet) {
       std::cerr << "Bad token construction" << std::endl;
     }
     return -1;
   }
 
   if (memcmp(plaintext.data(), sa, salen) != 0) {
-    if (!config.quiet) {
+		if (!svConfig.quiet) {
       std::cerr << "Client address does not match" << std::endl;
     }
     return -1;
@@ -3301,7 +3301,7 @@ int Server::verify_token(ngtcp2_cid *ocid, const ngtcp2_pkt_hd *hd,
 
   // Allow 10 seconds window
   if (t + 10ULL * NGTCP2_SECONDS < now) {
-    if (!config.quiet) {
+		if (!svConfig.quiet) {
       std::cerr << "Token has been expired" << std::endl;
     }
     return -1;
@@ -3313,8 +3313,8 @@ int Server::verify_token(ngtcp2_cid *ocid, const ngtcp2_pkt_hd *hd,
 }
 
 int Server::send_packet(Endpoint &ep, const Address &remote_addr, Buffer &buf) {
-  if (debug::packet_lost(config.tx_loss_prob)) {
-    if (!config.quiet) {
+	if (debug::packet_lost(svConfig.tx_loss_prob)) {
+		if (!svConfig.quiet) {
       std::cerr << "** Simulated outgoing packet loss **" << std::endl;
     }
     buf.reset();
@@ -3348,7 +3348,7 @@ int Server::send_packet(Endpoint &ep, const Address &remote_addr, Buffer &buf) {
   assert(static_cast<size_t>(nwrite) == buf.size());
   buf.reset();
 
-  if (!config.quiet) {
+	if (!svConfig.quiet) {
     std::cerr << "Sent packet: local="
               << util::straddr(&ep.addr.su.sa, ep.addr.len) << " remote="
               << util::straddr(&remote_addr.su.sa, remote_addr.len) << " "

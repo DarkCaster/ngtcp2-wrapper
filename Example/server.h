@@ -78,7 +78,7 @@ struct ServerConfig {
   bool validate_addr;
 };
 
-extern ServerConfig config;
+extern ServerConfig svConfig;
 
 struct HTTPHeader {
   template <typename T1, typename T2>
