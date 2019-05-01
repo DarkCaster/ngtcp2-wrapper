@@ -78,6 +78,8 @@ struct ServerConfig {
   bool validate_addr;
 };
 
+extern ServerConfig config;
+
 struct HTTPHeader {
   template <typename T1, typename T2>
   HTTPHeader(const T1 &name, const T2 &value) : name(name), value(value) {}

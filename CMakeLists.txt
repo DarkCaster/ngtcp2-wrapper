@@ -118,6 +118,8 @@ if((NOT(HAVE_CTYPE_H)) OR (NOT(HAVE_ISDIGIT)))
 	message(FATAL_ERROR "C header file ctype.h or isdigit() function not available for your platform. Cannot proceed.")
 endif()
 
+find_package(Threads)
+
 #save build configuration to config.h
 configure_file(config.h.in config.h)
 
@@ -151,7 +153,7 @@ set(lib_SOURCES
 
 # Public shared library
 add_library(ngtcp2_wrapper SHARED ${lib_SOURCES})
-target_link_libraries(ngtcp2_wrapper PRIVATE ${OPENSSL_LIBRARIES} ${LIBEV_LIB} ${LIBNGHTTP3_LIB} ${LIBNGTCP2_LIB})
+target_link_libraries(ngtcp2_wrapper PRIVATE ${OPENSSL_LIBRARIES} ${LIBEV_LIB} ${LIBNGHTTP3_LIB} ${LIBNGTCP2_LIB} ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT})
 
 set(test_server_SOURCES
 	"TestUtil/main-server.cpp"
