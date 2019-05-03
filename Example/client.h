@@ -46,6 +46,7 @@
 #include "shared.h"
 #include "buffer.h"
 #include <bits/unique_ptr.h>
+#include "client_config.h"
 
 using namespace ngtcp2;
 

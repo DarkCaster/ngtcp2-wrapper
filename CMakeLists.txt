@@ -105,6 +105,7 @@ include(CheckIncludeFile)
 include(CheckSymbolExists)
 check_include_file(arpa/inet.h HAVE_ARPA_INET_H)
 check_include_file(netinet/in.h HAVE_NETINET_IN_H)
+check_include_file(sys/socket.h HAVE_SYS_SOCKET_H)
 check_include_file(inttypes.h HAVE_INTTYPES_H)
 check_include_file(stdint.h HAVE_STDINT_H)
 check_include_file(stddef.h HAVE_STDDEF_H)
@@ -138,6 +139,8 @@ include_directories(
 	)
 
 set(lib_SOURCES
+	"Lib/client_config.c"
+	"Lib/server_config.c"
 	"Lib/buffer.cpp"
 	"Example/http_parser.c"
 	"Example/server.cc"

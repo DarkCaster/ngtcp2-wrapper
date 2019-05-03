@@ -252,21 +252,6 @@ int parse_host_port(Address &dest, int af, const char *first,
 	return 0;
 }
 
-void config_set_default(ServerConfig &config) {
-	config = ServerConfig{};
-	config.tx_loss_prob = 0.;
-	config.rx_loss_prob = 0.;
-	config.ciphers = "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_"
-	                 "POLY1305_SHA256";
-	config.groups = "P-256:X25519:P-384:P-521";
-	config.timeout = 30000;
-	{
-		auto path = realpath(".", nullptr);
-		config.htdocs = path;
-		free(path);
-	}
-}
-
 void print_usage() {
 	std::cerr << "Usage: server [OPTIONS] <ADDR> <PORT> <PRIVATE_KEY_FILE> "
 							 "<CERTIFICATE_FILE>"
@@ -276,7 +261,7 @@ void print_usage() {
 void print_help() {
 	print_usage();
 
-	config_set_default(svConfig);
+	server_config_set_default(&svConfig);
 
 	std::cout << R"(
 	<ADDR>      Address to listen to.  '*' binds to any address.
@@ -325,7 +310,7 @@ Options:
 }
 
 int main(int argc, char **argv) {
-	config_set_default(svConfig);
+	server_config_set_default(&svConfig);
 
 	for (;;) {
 		static int flag = 0;
@@ -350,17 +335,6 @@ int main(int argc, char **argv) {
 			break;
 		}
 		switch (c) {
-			case 'd': {
-				// --htdocs
-				auto path = realpath(optarg, nullptr);
-			if (path == nullptr) {
-				std::cerr << "path: invalid path " << optarg << std::endl;
-				exit(EXIT_FAILURE);
-			}
-			svConfig.htdocs = path;
-			free(path);
-			break;
-			}
 			case 'h':
 				// --help
 				print_help();
@@ -449,12 +423,6 @@ int main(int argc, char **argv) {
 	if (ssl_ctx == nullptr) {
 		exit(EXIT_FAILURE);
 	}
-
-	if (svConfig.htdocs.back() != '/') {
-		svConfig.htdocs += '/';
-	}
-
-	std::cerr << "Using document root " << svConfig.htdocs << std::endl;
 
 	auto ssl_ctx_d = defer(SSL_CTX_free, ssl_ctx);
 

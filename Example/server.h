@@ -48,35 +48,9 @@
 #include "template.h"
 #include "shared.h"
 #include "buffer.h"
+#include "server_config.h"
 
 using namespace ngtcp2;
-
-struct ServerConfig {
-  Address preferred_ipv4_addr;
-  Address preferred_ipv6_addr;
-  // tx_loss_prob is probability of losing outgoing packet.
-  double tx_loss_prob;
-  // rx_loss_prob is probability of losing incoming packet.
-  double rx_loss_prob;
-  // ciphers is the list of enabled ciphers.
-  const char *ciphers;
-  // groups is the list of supported groups.
-  const char *groups;
-  // htdocs is a root directory to serve documents.
-  std::string htdocs;
-  // port is the port number which server listens on for incoming
-  // connections.
-  uint16_t port;
-  // quiet suppresses the output normally shown except for the error
-  // messages.
-  bool quiet;
-  // timeout is an idle timeout for QUIC connection.
-  uint32_t timeout;
-  // show_secret is true if transport secrets should be printed out.
-  bool show_secret;
-  // validate_addr is true if server requires address validation.
-  bool validate_addr;
-};
 
 extern ServerConfig svConfig;
 

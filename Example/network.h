@@ -53,18 +53,6 @@ enum network_error {
   NETWORK_ERR_CLOSE_WAIT = -12,
 };
 
-union sockaddr_union {
-  sockaddr_storage storage;
-  sockaddr sa;
-  sockaddr_in6 in6;
-  sockaddr_in in;
-};
-
-struct Address {
-  socklen_t len;
-  union sockaddr_union su;
-};
-
 struct PathStorage {
   PathStorage() {
     path.local.addr = local_addrbuf.data();

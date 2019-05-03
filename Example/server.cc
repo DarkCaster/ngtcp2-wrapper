@@ -410,7 +410,7 @@ Request request_path(const std::string &uri, bool is_connect) {
 
 namespace {
 std::string resolve_path(const std::string &req_path) {
-	auto raw_path = svConfig.htdocs + req_path;
+	auto raw_path = std::string("") + req_path;
   auto malloced_path = realpath(raw_path.c_str(), nullptr);
   if (malloced_path == nullptr) {
     return "";
@@ -418,8 +418,8 @@ std::string resolve_path(const std::string &req_path) {
   auto path = std::string(malloced_path);
   free(malloced_path);
 
-	if (path.size() < svConfig.htdocs.size() ||
-	    !std::equal(std::begin(svConfig.htdocs), std::end(svConfig.htdocs),
+	if (path.size() < std::string("").size() ||
+	    !std::equal(std::begin(std::string("")), std::end(std::string("")),
                   std::begin(path))) {
     return "";
   }
@@ -704,7 +704,7 @@ int Stream::start_response(nghttp3_conn *httpconn) {
     if (fstat(fd, &st) == 0) {
       if (st.st_mode & S_IFDIR) {
         send_redirect_response(httpconn, 308,
-				                       path.substr(svConfig.htdocs.size() - 1) + '/');
+				                       path.substr(std::string("").size() - 1) + '/');
         return 0;
       }
       content_length = st.st_size;
